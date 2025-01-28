@@ -7,6 +7,11 @@ server:
       min-spare: 10
     accept-count: 10
 
+wechat:
+  config:
+    originalid: gh_60da19b9a6c8
+    token: x9x6
+
 logging:
   level:
     root: info
