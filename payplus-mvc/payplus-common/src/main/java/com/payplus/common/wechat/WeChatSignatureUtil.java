@@ -24,7 +24,7 @@ public class WeChatSignatureUtil {
         }
 
         // 3）开发者获得加密后的字符串可与signature对比，标识该请求来源于微信
-        if (encryptedStr.equals(signature.toUpperCase())) {
+        if (encryptedStr.equals(signature)) {
             return true;
         } else {
             return false;

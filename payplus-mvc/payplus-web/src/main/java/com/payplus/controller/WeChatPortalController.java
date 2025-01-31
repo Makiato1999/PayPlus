@@ -1,16 +1,17 @@
 package com.payplus.controller;
 
+import com.payplus.common.wechat.MessageTextEntity;
 import com.payplus.common.wechat.WeChatSignatureUtil;
+import com.payplus.common.wechat.XmlUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController()
+@CrossOrigin("*")
+@RequestMapping("/api/v1/wechat/portal/")
 public class WeChatPortalController {
 
     @Value("${wechat.config.originalid}")
@@ -19,10 +20,10 @@ public class WeChatPortalController {
     private String token;
 
     @RequestMapping(value = "/receive", method = RequestMethod.GET, produces = "text/plain;charset=utf-8")
-    public String validate(@RequestParam(value = "signature") String signature,
-                           @RequestParam(value = "timestamp") String timestamp,
-                           @RequestParam(value = "nonce") String nonce,
-                           @RequestParam(value = "echostr") String echostr) {
+    public String validate(@RequestParam(name = "signature") String signature,
+                           @RequestParam(name = "timestamp") String timestamp,
+                           @RequestParam(name = "nonce") String nonce,
+                           @RequestParam(name = "echostr") String echostr) {
         try {
             log.info("WeChat 公众号 signature verification started [{}, {}, {}, {}]",
                     signature, timestamp, nonce, echostr);
@@ -46,5 +47,29 @@ public class WeChatPortalController {
     }
 
     @RequestMapping(value = "/receive", method = RequestMethod.POST, produces = "application/xml; charset=UTF-8")
-    public String
+    public String post(@RequestBody String requestBody) {
+        try {
+            MessageTextEntity message = XmlUtil.xmlToBean(requestBody, MessageTextEntity.class);
+            String openId = message.getFromUserName();
+            log.info("WeChat 公众号 request receive {} started {}", openId, requestBody);
+            return buildMessageTextEntity(openId, "WeChat 公众平台 receives request, your last message is: " + message.getContent());
+        } catch (Exception e) {
+            log.error("WeChat 公众号 request receive failed {}", requestBody, e);
+            return "";
+        }
+    }
+
+    private String buildMessageTextEntity(String openId, String content) {
+        MessageTextEntity res = new MessageTextEntity();
+        // 发送方账号, 公众号分配的Id
+        res.setFromUserName(originalid);
+        // 开发者微信号
+        res.setToUserName(openId);
+        // 消息创建时间 （整型）
+        res.setCreateTime(String.valueOf(System.currentTimeMillis() / 1000L));
+        // 消息类型，文本为text
+        res.setMsgType("text");
+        res.setContent(content);
+        return XmlUtil.beanToXml(res);
+    }
 }

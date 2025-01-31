@@ -1,5 +1,5 @@
 server:
-  port: 8092
+  port: 8080
   tomcat:
     max-connections: 20
     threads:
@@ -11,6 +11,12 @@ wechat:
   config:
     originalid: gh_60da19b9a6c8
     token: x9x6
+    app-id: wxc18b4767329f4e29
+    appsecret: 1e7dfd1461e48d519794c01f559eacf1
+
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 
 logging:
   level:
