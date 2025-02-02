@@ -1,9 +1,6 @@
 package com.payplus.domain.req;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Builder
@@ -19,15 +16,30 @@ public class WeChatQrCodeReq {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ActionInfo {
-        private Scene scene;
+        Scene scene;
 
         @Data
         @Builder
         @AllArgsConstructor
         @NoArgsConstructor
         public static class Scene {
-            private Integer scene_id;
+            Integer scene_id;
+            String scene_str;
         }
     }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public enum ActionNameTypeVO {
+        QR_SCENE("QR_SCENE", "临时的整型参数值"),
+        QR_STR_SCENE("QR_STR_SCENE", "临时的字符串参数值"),
+        QR_LIMIT_SCENE("QR_LIMIT_SCENE", "永久的整型参数值"),
+        QR_LIMIT_STR_SCENE("QR_LIMIT_STR_SCENE", "永久的字符串参数值");
+
+        private String code;
+        private String info;
+    }
+
 }
 

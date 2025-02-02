@@ -3,11 +3,17 @@ package com.payplus.service.impl;
 import com.payplus.domain.req.WeChatQrCodeReq;
 import com.payplus.domain.res.WeChatQrCodeRes;
 import com.payplus.domain.res.WeChatTokenRes;
+import com.payplus.domain.vo.WeChatTemplateMessageVO;
 import com.payplus.service.wechat.IWeChatApiService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+@Service
 public class WeChatApiServiceImpl implements IWeChatApiService {
     private static final String BASE_URL = "https://api.weixin.qq.com";
+
+    @Autowired
     private final RestTemplate restTemplate;
 
     public WeChatApiServiceImpl(RestTemplate restTemplate) { this.restTemplate = restTemplate; }
@@ -31,7 +37,7 @@ public class WeChatApiServiceImpl implements IWeChatApiService {
     }
 
     @Override
-    public WeChatQrCodeRes getToken(String token, WeChatQrCodeReq weChatQrCodeReq) {
+    public WeChatQrCodeRes createQrCode(String token, WeChatQrCodeReq weChatQrCodeReq) {
         String url = String.format("%s/cgi-bin/qrcode/create?access_token=%s",
                 BASE_URL, token);
 
@@ -40,6 +46,15 @@ public class WeChatApiServiceImpl implements IWeChatApiService {
         if (res == null) {
             throw new RuntimeException("QrCode is null");
         }
+        if (res.getErrcode() != 0) {
+            throw new RuntimeException(String.format("QrCode request failed, errcode = %d, errmsg = %s",
+                    res.getErrcode(), res.getErrmsg()));
+        }
         return res;
+    }
+
+    @Override
+    public void sendMessage(String accessToken, WeChatTemplateMessageVO weixinTemplateMessageVO) {
+
     }
 }
