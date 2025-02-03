@@ -4,12 +4,15 @@ import com.google.common.cache.Cache;
 import com.payplus.domain.req.WeChatQrCodeReq;
 import com.payplus.domain.res.WeChatQrCodeRes;
 import com.payplus.domain.res.WeChatTokenRes;
+import com.payplus.domain.vo.WeChatTemplateMessageVO;
 import com.payplus.service.ILoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class WeChatLoginServiceImpl  implements ILoginService {
@@ -18,6 +21,9 @@ public class WeChatLoginServiceImpl  implements ILoginService {
 
     @Value("${wechat.config.app-secret}")
     private String appSecret;
+
+    @Value("${wechat.config.template-id}")
+    private String templateId;
 
     @Resource
     private Cache<String, String> weChatAccessTokenCache;
@@ -63,5 +69,24 @@ public class WeChatLoginServiceImpl  implements ILoginService {
     @Override
     public void saveLoginState(String ticket, String openId) {
         openIdTokenCache.put(ticket, openId);
+
+        // 1. 获取 accessToken 【实际业务场景，按需处理下异常】
+        String accessToken = weChatAccessTokenCache.getIfPresent(appId);
+        if (null == accessToken) {
+            WeChatTokenRes weChatTokenRes = weChatApiService.getToken("client_credential", appId, appSecret);
+            assert weChatTokenRes != null;
+            accessToken = weChatTokenRes.getAccess_token();
+            weChatAccessTokenCache.put(appId, accessToken);
+        }
+
+        // 2. 发送模板消息
+        Map<String, Map<String, String>> data = new HashMap<>();
+        WeChatTemplateMessageVO.put(data, WeChatTemplateMessageVO.TemplateKey.USER, openId);
+
+        WeChatTemplateMessageVO templateMessageDTO = new WeChatTemplateMessageVO(openId, templateId);
+        templateMessageDTO.setUrl("https://github.com/Makiato1999");
+        templateMessageDTO.setData(data);
+
+        weChatApiService.sendMessage(accessToken, templateMessageDTO);
     }
 }

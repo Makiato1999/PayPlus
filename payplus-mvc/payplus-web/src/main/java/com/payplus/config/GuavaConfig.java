@@ -11,14 +11,14 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class GuavaConfig {
 
-    @Bean("weChatAccessToken")
+    @Bean(name = "weChatAccessTokenCache")
     public Cache<String, String> weChatAccessToken() {
         return CacheBuilder.newBuilder()
                 .expireAfterWrite(2, TimeUnit.HOURS)
                 .build();
     }
 
-    @Bean("openIdToken")
+    @Bean(name = "openIdTokenCache")
     public Cache<String, String> openIdToken() {
         return CacheBuilder.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
