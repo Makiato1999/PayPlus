@@ -23,4 +23,12 @@
                #{totalAmount}, #{status}, now(), now())
     </insert>
 
+    <select id="queryUnpaidOrder" parameterType="com.payplus.domain.po.PayOrder" resultMap="dataMap">
+        select product_id, product_name, order_id, order_time, total_amount, status, pay_url
+        from pay_order
+        where user_id = #{userId} and product_id = #{productId}
+        order by id desc
+        limit 1
+    </select>
+
 </mapper>
