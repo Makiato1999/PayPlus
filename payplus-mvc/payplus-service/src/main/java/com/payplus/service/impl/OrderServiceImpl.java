@@ -1,6 +1,7 @@
 package com.payplus.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.payplus.common.constants.Constants;
@@ -87,7 +88,7 @@ public class OrderServiceImpl implements IOrderService {
                 .build();
     }
 
-    private PayOrder doPrepayOrder(String productId, String productName, String orderId, BigDecimal totalAmount) {
+    private PayOrder doPrepayOrder(String productId, String productName, String orderId, BigDecimal totalAmount) throws AlipayApiException {
         AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
         request.setNotifyUrl(notifyUrl);
         request.setReturnUrl(returnUrl);
