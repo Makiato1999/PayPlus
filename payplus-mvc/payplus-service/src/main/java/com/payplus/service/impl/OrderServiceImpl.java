@@ -1,9 +1,11 @@
 package com.payplus.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.request.AlipayTradePagePayRequest;
+import com.google.common.eventbus.EventBus;
 import com.payplus.common.constants.Constants;
 import com.payplus.dao.IOrderDao;
 import com.payplus.domain.po.PayOrder;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -43,6 +46,17 @@ public class OrderServiceImpl implements IOrderService {
     @Resource
     private AlipayClient alipayClient;
 
+    @Resource
+    private EventBus eventBus;
+
+    /*
+    调用 createOrder(ShopCartReq shopCartReq)，表示用户点击下单，流程如下：
+        查询当前用户是否有未支付订单
+        如果有未支付订单，则返回已有的 orderId 和 payUrl
+        如果订单未创建支付单，则生成支付单
+        如果没有订单，则创建新订单并生成支付单
+
+     */
     @Override
     public PayOrderRes createOrder(ShopCartReq shopCartReq) throws Exception {
         // 查询当前用户是否存在未支付订单或者掉单订单
@@ -86,6 +100,31 @@ public class OrderServiceImpl implements IOrderService {
                 .orderId(orderId)
                 .payUrl(payOrder.getPayUrl())
                 .build();
+    }
+
+    @Override
+    public void changeOrderPaySuccess(String orderId) {
+        PayOrder payOrderReq = new PayOrder();
+        payOrderReq.setOrderId(orderId);
+        payOrderReq.setStatus(Constants.OrderStatusEnum.PAY_SUCCESS.getCode());
+        orderDao.changeOrderPaySuccess(payOrderReq);
+
+        eventBus.post(JSON.toJSONString(payOrderReq));
+    }
+
+    @Override
+    public List<String> queryNoPayNotifyOrder() {
+        return orderDao.queryNoPayNotifyOrder();
+    }
+
+    @Override
+    public List<String> queryTimeoutCloseOrderList() {
+        return orderDao.queryTimeoutCloseOrderList();
+    }
+
+    @Override
+    public boolean changeOrder(String orderId) {
+        return orderDao.changeOrderClose(orderId);
     }
 
     private PayOrder doPrepayOrder(String productId, String productName, String orderId, BigDecimal totalAmount) throws AlipayApiException {
