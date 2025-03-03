@@ -54,7 +54,7 @@
     目标：查询超过 30 分钟未支付的订单，通常用于 订单自动取消
 
     -->
-    <select id="queryTimeoutCloseOrderList" parameterType="com.payplus.domain.po.PayOrder">
+    <select id="queryTimeoutCloseOrderList" parameterType="com.payplus.domain.po.PayOrder" resultType="java.lang.String">
         select order_id as orderId from pay_order
         where status = 'PAY_WAIT' AND NOW() >= order_time + INTERVAL 30 MINUTE
         ORDER BY id Asc
@@ -71,7 +71,7 @@
        2. 轮询任务（间歇性查询）
        由后台服务每隔一段时间运行一次，主动检查超时订单。
     -->
-    <select id="queryNoPayNotifyOrder" parameterType="com.payplus.domain.po.PayOrder">
+    <select id="queryNoPayNotifyOrder" parameterType="com.payplus.domain.po.PayOrder" resultType="java.lang.String">
         select order_id as orderId from pay_order
         where status = 'PAY_WAIT' AND now() >= order_time + INTERVAL 1 MINUTE
         ORDER BY id Asc

@@ -123,7 +123,7 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     @Override
-    public boolean changeOrder(String orderId) {
+    public boolean changeOrderClose(String orderId) {
         return orderDao.changeOrderClose(orderId);
     }
 

@@ -14,5 +14,5 @@ public interface IOrderService {
 
     List<String> queryTimeoutCloseOrderList();
 
-    boolean changeOrder(String orderId);
+    boolean changeOrderClose(String orderId);
 }

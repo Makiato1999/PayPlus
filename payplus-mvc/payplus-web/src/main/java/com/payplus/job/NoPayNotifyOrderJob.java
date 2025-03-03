@@ -24,11 +24,22 @@ public class NoPayNotifyOrderJob {
     @Resource
     private AlipayClient alipayClient;
 
+    /**
+     * 每 3 秒执行一次（0/3 表示每 3 秒触发一次任务）。
+     * 适用于高频支付检查，防止订单状态丢失。
+     */
     @Scheduled(cron = "0/3 * * * * ?")
     public void exec() {
         try {
             log.info("任务；检测未接收到或未正确处理的支付回调通知");
+            /*
+            查的是超过 1 分钟未支付的订单，但它们可能已经支付了，只是我们的数据库没更新。
+             */
             List<String> orderIds = orderService.queryNoPayNotifyOrder();
+            /*
+            然后去支付宝查询这些订单的真实支付状态：
+            如果支付宝显示支付成功了，但我们的数据库还没有更新，就手动更新订单状态为 PAID
+             */
             if (null == orderIds || orderIds.isEmpty()) return;
 
             for (String orderId : orderIds) {
