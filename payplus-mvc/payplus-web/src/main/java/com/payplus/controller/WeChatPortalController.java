@@ -33,22 +33,22 @@ public class WeChatPortalController {
                            @RequestParam(name = "nonce") String nonce,
                            @RequestParam(name = "echostr") String echostr) {
         try {
-            log.info("WeChat 公众号 signature verification started [{}, {}, {}, {}]",
+            log.info("WeChat 公众号验签信息开始 [{}, {}, {}, {}]",
                     signature, timestamp, nonce, echostr);
 
             if (StringUtils.isAnyBlank(signature, timestamp, nonce, echostr)) {
-                throw new IllegalArgumentException("Request parameters are illegal");
+                throw new IllegalArgumentException("请求参数非法，请核实!");
             }
 
             boolean verifyStatus = WeChatSignatureUtil.verify(token, signature, timestamp, nonce);
-            log.info("WeChat 公众号 signature verification done, verify status：{}", verifyStatus);
+            log.info("WeChat 公众号验签信息完成 check：{}", verifyStatus);
             if (verifyStatus) {
                 return echostr;
             } else {
                 return null;
             }
         } catch (Exception e) {
-            log.error("WeChat 公众号 signature verification failed [{}, {}, {}, {}]",
+            log.error("WeChat 公众号验签信息失败 [{}, {}, {}, {}]",
                     signature, timestamp, nonce, echostr);
             return null;
         }
@@ -66,15 +66,15 @@ public class WeChatPortalController {
         try {
             MessageTextEntity message = XmlUtil.xmlToBean(requestBody, MessageTextEntity.class);
             String openId = message.getFromUserName();
-            log.info("WeChat 公众号 request receive {} started {}", openId, requestBody);
+            log.info("WeChat 公众号信息请求 {} 请求体 {}", openId, requestBody);
 
             if ("event".equals(message.getMsgType()) && "SCAN".equals(message.getEvent())) {
                 weChatLoginService.saveLoginState(message.getTicket(), openId);
-                return buildMessageTextEntity(openId, "Login Successfully");
+                return buildMessageTextEntity(openId, "登陆成功");
             }
-            return buildMessageTextEntity(openId, "WeChat 公众平台 receives request, your last message is: " + message.getContent());
+            return buildMessageTextEntity(openId, "WeChat 公众平台接收了你的请求, 你的上一条消息是: " + message.getContent());
         } catch (Exception e) {
-            log.error("WeChat 公众号 request receive failed {}", requestBody, e);
+            log.error("WeChat 公众号请求接收失败 {}", requestBody, e);
             return "";
         }
     }
