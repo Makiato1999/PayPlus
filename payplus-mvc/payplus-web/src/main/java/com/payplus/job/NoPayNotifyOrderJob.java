@@ -13,7 +13,8 @@ import javax.annotation.Resource;
 import java.util.List;
 
 /**
- * 检测未接收到或者未正确处理的支付回调通知
+ * 这个类是一个支付宝支付状态兜底定时任务：
+ * 每 3 秒扫一次数据库中“支付中”的订单，调用支付宝接口验证真实支付状态，如果已付款就手动更新系统里的订单状态
  */
 @Slf4j
 @Component
@@ -31,7 +32,7 @@ public class NoPayNotifyOrderJob {
     @Scheduled(cron = "0/3 * * * * ?")
     public void exec() {
         try {
-            log.info("任务；检测未接收到或未正确处理的支付回调通知");
+            log.info("任务: 检测未接收到或未正确处理的支付回调通知");
             /*
             查的是超过 1 分钟未支付的订单，但它们可能已经支付了，只是我们的数据库没更新。
              */
@@ -50,15 +51,22 @@ public class NoPayNotifyOrderJob {
 
                 AlipayTradeQueryResponse alipayTradeQueryResponse = alipayClient.execute(request);
                 String code = alipayTradeQueryResponse.getCode();
-                // 判断状态码
+
+                if ("40004".equals(code) && "ACQ.TRADE_NOT_EXIST".equals(alipayTradeQueryResponse.getSubCode())) {
+                    log.warn("订单 {} 在支付宝不存在，可能尚未支付或订单号错误", orderId);
+                    continue;
+                }
+
+                // 判断状态码，code == 10000：表示支付宝查询成功，说明订单已付款
                 if ("10000".equals(code)) {
+                    // 把订单手动改为已支付（更新数据库）
                     orderService.changeOrderPaySuccess(orderId);
                 }
             }
 
 
         } catch (Exception e) {
-            log.error("检测未接收到或未正确处理的支付回调通知失败", e);
+            log.error("检测未接收到或未正确处理的支付回调通知 失败", e);
         }
     }
 }
