@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
-    <file url="file://$PROJECT_DIR$/payplus-api/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/payplus-api/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/payplus-app/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/payplus-app/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/payplus-domain/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/payplus-domain/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/payplus-infrastructure/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/payplus-infrastructure/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/payplus-trigger/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/payplus-trigger/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/payplus-types/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/payplus-types/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/payplus-ddd-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/payplus-ddd-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/payplus-ddd-app/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/payplus-ddd-app/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/payplus-ddd-domain/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/payplus-ddd-domain/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/payplus-ddd-infrastructure/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/payplus-ddd-infrastructure/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/payplus-ddd-trigger/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/payplus-ddd-trigger/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/payplus-ddd-types/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/payplus-ddd-types/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>
