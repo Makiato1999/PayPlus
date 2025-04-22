@@ -41,10 +41,10 @@
 
     <developers>
         <developer>
-            <name>xiaofuge</name>
-            <email>184172133@qq.com</email>
-            <organization>fuzhengwei</organization>
-            <organizationUrl>https://github.com/fuzhengwei</organizationUrl>
+            <name>xiaoran</name>
+            <email>1462386042@qq.com</email>
+            <organization>xiaoran</organization>
+            <organizationUrl>https://github.com/makiato1999</organizationUrl>
         </developer>
     </developers>
 
@@ -180,21 +180,62 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <java_jvm>-Xms1G -Xmx1G -server  -XX:MaxPermSize=256M -Xss256K -Dspring.profiles.active=test -XX:+DisableExplicitGC -XX:+UseG1GC  -XX:LargePageSizeInBytes=128m -XX:+UseFastAccessorMethods -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/export/Logs/s-pay-mall-boot -Xloggc:/export/Logs/s-pay-mall-boot/gc-s-pay-mall-boot.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps</java_jvm>
+                <java_jvm>
+                    -Xms1G -Xmx1G -server
+                    -XX:MaxMetaspaceSize=256M
+                    -Xss256K
+                    -Dspring.profiles.active=dev
+                    -XX:+DisableExplicitGC
+                    -XX:+UseG1GC
+                    -XX:LargePageSizeInBytes=128m
+                    -XX:+UseFastAccessorMethods
+                    -XX:+HeapDumpOnOutOfMemoryError
+                    -XX:HeapDumpPath=/export/Logs/payplus-boot
+                    -Xloggc:/export/Logs/payplus-boot/gc-dev-payplus-boot.log
+                    -XX:+PrintGCDetails -XX:+PrintGCDateStamps
+                </java_jvm>
                 <profileActive>dev</profileActive>
             </properties>
         </profile>
         <profile>
             <id>test</id>
             <properties>
-                <java_jvm>-Xms1G -Xmx1G -server  -XX:MaxPermSize=256M -Xss256K -Dspring.profiles.active=test -XX:+DisableExplicitGC -XX:+UseG1GC  -XX:LargePageSizeInBytes=128m -XX:+UseFastAccessorMethods -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/export/Logs/s-pay-mall-boot -Xloggc:/export/Logs/s-pay-mall-boot/gc-s-pay-mall-boot.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps</java_jvm>
+                <java_jvm>
+                    -Xms1G -Xmx1G -server <!--JVM 最小 / 最大堆内存为 1G-->
+                    -XX:MaxMetaspaceSize=256M <!--控制类加载元空间上限-->
+                    <!-- 控制的是 类元数据（比如类结构、方法元信息）在本地内存中最多可占用的空间，它不属于 JVM 的堆内存，也不属于“代”的范围，但它是“永久代”的替代方案。-->
+                    <!---XX:MaxPermSize=256M    JDK 8 之后已经无效（Java 官方已经彻底废弃这个参数)-->
+                    -Xss256K <!--每个线程的栈大小（较小能减少内存）-->
+                    -Dspring.profiles.active=test <!--激活 Spring Boot 的配置文件 application-test.yml-->
+                    -XX:+DisableExplicitGC <!--禁止 System.gc() 主动触发 GC-->
+                    -XX:+UseG1GC <!--使用 G1 垃圾回收器（现代 JVM 推荐）-->
+                    -XX:LargePageSizeInBytes=128m <!--大页内存支持（性能优化）-->
+                    -XX:+UseFastAccessorMethods <!--加快 getter/setter 执行（微优化）-->
+                    -XX:+HeapDumpOnOutOfMemoryError <!--OOM 时生成内存转储文件-->
+                    -XX:HeapDumpPath=/export/Logs/payplus-boot <!--指定 OOM dump 的保存路径-->
+                    -Xloggc:/export/Logs/payplus-boot/gc-test-payplus-boot.log <!--GC 日志路径-->
+                    -XX:+PrintGCDetails -XX:+PrintGCDateStamps <!--打印 GC 详情和时间戳-->
+                </java_jvm>
                 <profileActive>test</profileActive>
             </properties>
         </profile>
         <profile>
             <id>prod</id>
             <properties>
-                <java_jvm>-Xms6G -Xmx6G -server  -XX:MaxPermSize=256M -Xss256K -Dspring.profiles.active=release -XX:+DisableExplicitGC -XX:+UseG1GC  -XX:LargePageSizeInBytes=128m -XX:+UseFastAccessorMethods -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/export/Logs/fq-mall-activity-app -Xloggc:/export/Logs/s-pay-mall-boot/gc-s-pay-mall-boot.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps</java_jvm>
+                <java_jvm>
+                    -Xms6G -Xmx6G -server
+                    -XX:MaxMetaspaceSize=256M
+                    -Xss256K
+                    -Dspring.profiles.active=prod
+                    -XX:+DisableExplicitGC
+                    -XX:+UseG1GC
+                    -XX:LargePageSizeInBytes=128m
+                    -XX:+UseFastAccessorMethods
+                    -XX:+HeapDumpOnOutOfMemoryError
+                    -XX:HeapDumpPath=/export/Logs/payplus-boot
+                    -Xloggc:/export/Logs/payplus-boot/gc-prod-payplus-boot.log
+                    -XX:+PrintGCDetails -XX:+PrintGCDateStamps
+                </java_jvm>
                 <profileActive>prod</profileActive>
             </properties>
         </profile>

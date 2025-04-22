@@ -1,10 +1,8 @@
-# 命令执行 docker-compose -f docker-compose-environment.yml up -d
-# 云服务器；https://618.gaga.plus 本项目2c2g可云服务器部署
+# 命令执行 docker-compose -f docker-compose-environment-aliyun.yml up -d
 version: '3.9'
 services:
-  # mysql
   mysql:
-    image: mysql:8.0.32
+    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/mysql:8.0.32
     container_name: mysql
     command: --default-authentication-plugin=mysql_native_password
     restart: always
@@ -14,7 +12,7 @@ services:
     ports:
       - "13306:3306"
     volumes:
-      - ./mysql/sql:/docker-entrypoint-initdb.d
+      - ./sql:/docker-entrypoint-initdb.d
     healthcheck:
       test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
       interval: 5s
@@ -26,7 +24,7 @@ services:
 
   # phpmyadmin https://hub.docker.com/_/phpmyadmin
   phpmyadmin:
-    image: phpmyadmin:5.2.1
+    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/phpmyadmin:5.2.1
     container_name: phpmyadmin
     hostname: phpmyadmin
     ports:
@@ -43,7 +41,7 @@ services:
 
   # Redis
   redis:
-    image: redis:6.2
+    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/redis:6.2
     container_name: redis
     restart: always
     hostname: redis
@@ -64,7 +62,7 @@ services:
   # RedisAdmin https://github.com/joeferner/redis-commander
   # 账密 admin/admin
   redis-admin:
-    image: spryker/redis-commander:0.8.0
+    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/redis-commander:0.8.0
     container_name: redis-admin
     hostname: redis-commander
     restart: always

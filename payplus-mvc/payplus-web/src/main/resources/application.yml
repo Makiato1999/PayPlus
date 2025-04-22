@@ -2,4 +2,4 @@ spring:
   config:
     name: payplus-mvc
   profiles:
-    active: dev
+    active: prod
