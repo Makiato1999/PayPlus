@@ -1,7 +1,9 @@
 package com.payplus.domain.auth.service;
 
+import java.io.IOException;
+
 /**
- * @description 微信服务
+ * 供 Controller 调用，提供业务能力
  */
 
 public interface ILoginService {
@@ -9,5 +11,5 @@ public interface ILoginService {
 
     String checkLogin(String ticket);
 
-    void saveLoginState(String ticket, String openId);
+    void saveLoginState(String ticket, String openId) throws IOException;
 }
