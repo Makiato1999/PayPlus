@@ -1,5 +1,6 @@
 package com.payplus.trigger.http;
 
+import com.payplus.domain.auth.service.ILoginService;
 import com.payplus.types.sdk.wechat.MessageTextEntity;
 import com.payplus.types.sdk.wechat.WeChatSignatureUtil;
 import com.payplus.types.sdk.wechat.XmlUtil;
@@ -21,8 +22,8 @@ public class WeChatPortalController {
     @Value("${wechat.config.token}")
     private String token;
 
-//    @Resource
-//    private WeChatLoginServiceImpl weChatLoginService;
+    @Resource
+    private ILoginService loginService;
 
     @RequestMapping(value = "/receive", method = RequestMethod.GET, produces = "text/plain;charset=utf-8")
     public String validate(@RequestParam(name = "signature") String signature,
@@ -65,10 +66,10 @@ public class WeChatPortalController {
             String openId = message.getFromUserName();
             log.info("WeChat 公众号信息请求 {} 请求体 {}", openId, requestBody);
 
-//            if ("event".equals(message.getMsgType()) && "SCAN".equals(message.getEvent())) {
-//                weChatLoginService.saveLoginState(message.getTicket(), openId);
-//                return buildMessageTextEntity(openId, "登陆成功");
-//            }
+            if ("event".equals(message.getMsgType()) && "SCAN".equals(message.getEvent())) {
+                loginService.saveLoginState(message.getTicket(), openId);
+                return buildMessageTextEntity(openId, "登陆成功");
+            }
             return buildMessageTextEntity(openId, "WeChat 公众平台接收了你的请求, 你的上一条消息是: " + message.getContent());
         } catch (Exception e) {
             log.error("WeChat 公众号请求接收失败 {}", requestBody, e);
