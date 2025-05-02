@@ -36,13 +36,13 @@ public class OrderRepository implements IOrderRepository {
     }
 
     @Override
-    public OrderEntity queryUnpayOrder(ShopCartEntity shopCartEntity) {
+    public OrderEntity queryUnpaidOrder(ShopCartEntity shopCartEntity) {
         // 1. 封装参数
         PayOrder orderReq = new PayOrder();
         orderReq.setUserId(shopCartEntity.getUserId());
         orderReq.setProductId(shopCartEntity.getProductId());
         // 2. 查询到订单
-        PayOrder order = orderDao.queryUnPayOrder(orderReq);
+        PayOrder order = orderDao.queryUnpaidOrder(orderReq);
         if (null == order) return null;
 
         // 3. 返回结果

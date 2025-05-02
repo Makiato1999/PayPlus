@@ -24,7 +24,7 @@ public abstract class AbstractOrderService implements IOrderService {
     @Override
     public PayOrderEntity createOrder(ShopCartEntity shopCartEntity) throws Exception {
         // 查询当前用户是否存在未支付订单或者掉单订单
-        OrderEntity unpaidOrderEntity = repository.queryUnpayOrder(shopCartEntity);
+        OrderEntity unpaidOrderEntity = repository.queryUnpaidOrder(shopCartEntity);
 
         if (unpaidOrderEntity != null && OrderStatusVO.PAY_WAIT.getCode().equals(unpaidOrderEntity.getOrderStatusVO())) {
             log.info("创建订单-存在，已存在未支付订单。userId:{} productId:{} orderId:{}", shopCartEntity.getUserId(), shopCartEntity.getProductId(), unpaidOrderEntity.getOrderId());

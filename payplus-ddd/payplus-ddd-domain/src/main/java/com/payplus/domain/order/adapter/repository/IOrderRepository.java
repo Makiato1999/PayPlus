@@ -7,5 +7,5 @@ import com.payplus.domain.order.model.entity.ShopCartEntity;
 public interface IOrderRepository {
     void doSaveOrder(CreateOrderAggregate orderAggregate);
 
-    OrderEntity queryUnpayOrder(ShopCartEntity shopCartEntity);
+    OrderEntity queryUnpaidOrder(ShopCartEntity shopCartEntity);
 }

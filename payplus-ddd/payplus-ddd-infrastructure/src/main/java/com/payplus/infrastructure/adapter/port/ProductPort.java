@@ -4,7 +4,9 @@ import com.payplus.domain.order.adapter.port.IProductPort;
 import com.payplus.domain.order.model.entity.ProductEntity;
 import com.payplus.infrastructure.gateway.ProductRPC;
 import com.payplus.infrastructure.gateway.dto.ProductDTO;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ProductPort implements IProductPort {
     private final ProductRPC productRPC;
 
