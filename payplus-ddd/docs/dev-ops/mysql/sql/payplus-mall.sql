@@ -19,8 +19,8 @@ SET NAMES utf8mb4;
 /*!40101 SET @OLD_SQL_MODE='NO_AUTO_VALUE_ON_ZERO', SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-CREATE database if NOT EXISTS `s-pay-mall` default character set utf8mb4 ;
-use `s-pay-mall`;
+CREATE database if NOT EXISTS `payplus-mall` default character set utf8mb4 ;
+use `payplus-mall`;
 
 # 转储表 pay_order
 # ------------------------------------------------------------
