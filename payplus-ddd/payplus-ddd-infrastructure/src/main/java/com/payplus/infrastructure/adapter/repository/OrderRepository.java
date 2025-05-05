@@ -3,6 +3,7 @@ package com.payplus.infrastructure.adapter.repository;
 import com.payplus.domain.order.adapter.repository.IOrderRepository;
 import com.payplus.domain.order.model.aggregate.CreateOrderAggregate;
 import com.payplus.domain.order.model.entity.OrderEntity;
+import com.payplus.domain.order.model.entity.PayOrderEntity;
 import com.payplus.domain.order.model.entity.ProductEntity;
 import com.payplus.domain.order.model.entity.ShopCartEntity;
 import com.payplus.domain.order.model.valobj.OrderStatusVO;
@@ -55,5 +56,16 @@ public class OrderRepository implements IOrderRepository {
                 .totalAmount(order.getTotalAmount())
                 .payUrl(order.getPayUrl())
                 .build();
+    }
+
+    @Override
+    public void updateOrderPayInfo(PayOrderEntity payOrderEntity) {
+        PayOrder payOrder = PayOrder.builder()
+                .userId(payOrderEntity.getUserId())
+                .orderId(payOrderEntity.getOrderId())
+                .status(payOrderEntity.getOrderStatusVO().getCode())
+                .payUrl(payOrderEntity.getPayUrl())
+                .build();
+        orderDao.updateOrderPayInfo(payOrder);
     }
 }

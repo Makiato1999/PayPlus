@@ -31,14 +31,14 @@
         limit 1
     </select>
 
-<!--    &lt;!&ndash;-->
-<!--    update 语句不会返回数据，而只是更新数据库中的数据，所以不需要映射到 Java 对象。-->
-<!--    只需要 parameterType="com.payplus.domain.po.PayOrder" 来绑定参数，无需 resultMap。-->
-<!--    &ndash;&gt;-->
-<!--    <update id="updateOrderPayInfo" parameterType="com.payplus.domain.po.PayOrder">-->
-<!--        update pay_order set pay_url = #{payUrl}, status = #{status}, update_time = now()-->
-<!--        where order_id = #{orderId}-->
-<!--    </update>-->
+    <!--
+    update 语句不会返回数据，而只是更新数据库中的数据，所以不需要映射到 Java 对象。
+    只需要 parameterType="com.payplus.domain.po.PayOrder" 来绑定参数，无需 resultMap。
+    -->
+    <update id="updateOrderPayInfo" parameterType="com.payplus.infrastructure.dao.po.PayOrder">
+        update pay_order set pay_url = #{payUrl}, status = #{status}, update_time = now()
+        where order_id = #{orderId}
+    </update>
 
 <!--    <update id="changeOrderPaySuccess" parameterType="com.payplus.domain.po.PayOrder">-->
 <!--        update pay_order set status = #{status}, pay_time = now(), update_time = now()-->

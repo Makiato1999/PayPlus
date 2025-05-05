@@ -1,5 +1,6 @@
 package com.payplus.domain.order.service;
 
+import com.alipay.api.AlipayApiException;
 import com.payplus.domain.order.adapter.port.IProductPort;
 import com.payplus.domain.order.adapter.repository.IOrderRepository;
 import com.payplus.domain.order.model.aggregate.CreateOrderAggregate;
@@ -8,17 +9,22 @@ import com.payplus.domain.order.model.entity.PayOrderEntity;
 import com.payplus.domain.order.model.entity.ProductEntity;
 import com.payplus.domain.order.model.entity.ShopCartEntity;
 import com.payplus.domain.order.model.valobj.OrderStatusVO;
+import com.payplus.domain.payment.service.IPaymentService;
 import lombok.extern.slf4j.Slf4j;
+
+import java.math.BigDecimal;
 
 @Slf4j
 public abstract class AbstractOrderService implements IOrderService {
     protected final IOrderRepository repository;
 
     protected final IProductPort port;
+    protected final IPaymentService paymentService;
 
-    public AbstractOrderService(IOrderRepository repository, IProductPort port) {
+    public AbstractOrderService(IOrderRepository repository, IProductPort port, IPaymentService paymentService) {
         this.repository = repository;
         this.port = port;
+        this.paymentService = paymentService;
     }
 
     @Override
@@ -33,12 +39,12 @@ public abstract class AbstractOrderService implements IOrderService {
                     .payUrl(unpaidOrderEntity.getPayUrl())
                     .build();
         } else if (unpaidOrderEntity != null && OrderStatusVO.CREATE.getCode().equals(unpaidOrderEntity.getOrderStatusVO())) {
-//            log.info("创建订单-存在，存在未创建支付单订单，创建支付单开始 userId:{} productId:{} orderId:{}", shopCartReq.getUserId(), shopCartReq.getProductId(), unpaidOrder.getOrderId());
-//            PayOrder payOrder = doPrepayOrder(unpaidOrder.getProductId(), unpaidOrder.getProductName(), unpaidOrder.getOrderId(), unpaidOrder.getTotalAmount());
-//            return PayOrderRes.builder()
-//                    .orderId(payOrder.getOrderId())
-//                    .payUrl(payOrder.getPayUrl())
-//                    .build();
+            log.info("创建订单-存在，存在未创建支付单订单，创建支付单开始 userId:{} productId:{} orderId:{}", shopCartEntity.getUserId(), shopCartEntity.getProductId(), unpaidOrderEntity.getOrderId());
+            PayOrderEntity payOrderEntity = doPrepayOrder(unpaidOrderEntity.getProductId(), unpaidOrderEntity.getProductName(), unpaidOrderEntity.getOrderId(), unpaidOrderEntity.getTotalAmount());
+            return PayOrderEntity.builder()
+                    .orderId(payOrderEntity.getOrderId())
+                    .payUrl(payOrderEntity.getPayUrl())
+                    .build();
         }
 
         ProductEntity productEntity = port.queryProductByProductId(shopCartEntity.getProductId());
@@ -53,9 +59,13 @@ public abstract class AbstractOrderService implements IOrderService {
 
         this.doSaveOrder(orderAggregate);
 
+        // 创建支付单
+        PayOrderEntity payOrderEntity = doPrepayOrder(productEntity.getProductId(), productEntity.getProductName(), orderEntity.getOrderId(), productEntity.getPrice());
+        log.info("创建订单-完成，生成支付单。userId: {} orderId: {} payUrl: {}", shopCartEntity.getUserId(), orderEntity.getOrderId(), payOrderEntity.getPayUrl());
+
         return PayOrderEntity.builder()
                 .orderId(orderEntity.getOrderId())
-                .payUrl("暂无").build();
+                .payUrl(payOrderEntity.getPayUrl()).build();
     }
 
     /**
@@ -64,5 +74,7 @@ public abstract class AbstractOrderService implements IOrderService {
      * @param orderAggregate 订单聚合
      */
     protected abstract void doSaveOrder(CreateOrderAggregate orderAggregate);
+
+    protected abstract PayOrderEntity doPrepayOrder(String productId, String productName, String orderId, BigDecimal price) throws AlipayApiException;
 
 }
