@@ -1,5 +1,4 @@
 # 命令执行 docker-compose -f docker-compose-environment-aliyun.yml up -d
-# docker 代理和使用文档；https://bugstack.cn/md/road-map/docker.html
 version: '3.9'
 services:
   mysql:
@@ -13,7 +12,7 @@ services:
     ports:
       - "13306:3306"
     volumes:
-      - ./mysql/sql:/docker-entrypoint-initdb.d
+      - ./sql:/docker-entrypoint-initdb.d
     healthcheck:
       test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
       interval: 5s
