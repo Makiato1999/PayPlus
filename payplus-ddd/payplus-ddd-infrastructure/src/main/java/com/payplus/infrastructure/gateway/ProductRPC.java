@@ -12,7 +12,7 @@ public class ProductRPC {
         productDTO.setProductId(productId);
         productDTO.setProductName("测试商品");
         productDTO.setProductDesc("这是一个测试商品");
-        productDTO.setPrice(new BigDecimal("1.68"));
+        productDTO.setPrice(new BigDecimal("1500"));
         return productDTO;
     }
 
