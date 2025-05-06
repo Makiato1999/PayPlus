@@ -2,4 +2,4 @@ spring:
   config:
     name: payplus-ddd-app
   profiles:
-    active: dev
+    active: prod

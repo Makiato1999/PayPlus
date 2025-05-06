@@ -1,5 +1,5 @@
 server:
-  port: 8091
+  port: 8080
 
 # 线程池配置
 thread:
@@ -12,12 +12,12 @@ thread:
         block-queue-size: 5000
         policy: CallerRunsPolicy
 
-# 数据库配置
+# 数据库配置；启动时配置数据库资源信息
 spring:
   datasource:
     username: root
     password: 123456
-    url: jdbc:mysql://mysql:3306/s-pay-mall?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&useSSL=true
+    url: jdbc:mysql://mysql:3306/payplus-mall?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&useSSL=true
     driver-class-name: com.mysql.cj.jdbc.Driver
   hikari:
     pool-name: Retail_HikariCP
@@ -30,9 +30,28 @@ spring:
     connection-test-query: SELECT 1
   type: com.zaxxer.hikari.HikariDataSource
 
-#mybatis:
-#  mapper-locations: classpath:/mybatis/mapper/*.xml
-#  config-location:  classpath:/mybatis/config/mybatis-config.xml
+# MyBatis 配置【如需使用记得打开】
+mybatis:
+  mapper-locations: classpath:/mybatis/mapper/*.xml
+  config-location:  classpath:/mybatis/config/mybatis-config.xml
+
+wechat:
+  config:
+    originalId: gh_60da19b9a6c8
+    token: x9x6
+    app-id: wxc18b4767329f4e29
+    appsecret: 1e7dfd1461e48d519794c01f559eacf1
+    template-id: dj2MupGuE_aBVACvYlJtFPxc2i7TziDHqycAyUqqIvY
+
+# 支付宝支付 - 沙箱 https://opendocs.alipay.com/common/02kkv7
+alipay:
+  enabled: true
+  app_id: 9021000143682131
+  merchant_private_key: MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCDiQDXrSaDSXFXg8BljTron4J24ak2EEdpcvu2JvBMtUBvpQWkGvCqBsVP9TCncpk4yFtcr8gUR+cqHRDT/okGFLSgZlx+KAdP5C5tpzGRvDxb0UnsXpVZz/5KsW2vYxLgQvZ7lqkqIMjrRSLlMy5Lm5fP4AccS+JyxhN4z52Fi33g7A7xOUv/kloB7tvAg8DiTd4sxMmygTqT5WI5GMfHAqQh650R+8t6bPt8dXNKRKUJOBO11+/E41AgHr/9MDGRt5wBfX+bv4uXlzo9a+NjrbjQ26Psn/nRzZSef5tThcPGtCrsxaGWARR6c7ltysowb5Z3pLDIx88ysewgElbhAgMBAAECggEAcQKdwbAXncbU5Z7iB54u1bxuSBub2UJlSJks4JRV82HqycFbtmIbEcodbpQ3yDYypNGnhVvVqG8akllEow9WxO23PvSTVSSpG5/tr/JtKUw0A6MuQzIEWZTVY3FLztttVVbTFN4d238tgM32rDur8/PrnANbuJkOJxQ9mJewPBKgstKjJEJTE0x1isCzwp0mgWTtpXFkBs5vhhFdCDoBvrrhEv/WWbDSLEAIsic4VuWHj+agy0ghYOqe82Sc1YPtRUJlZ2iUu+e2LGxpuPa2JDuaDCaBDvQBRX2FIh1PbDzAp9NK9hlQzaFX8skqhURwA/4aduei6OcxkZvuE4arfQKBgQC35MeA9h+TZkdrzSutqVg9RGChBnUBg0Vd5vjh5AHvq73yAqMCpJIiKy/OQ9z0utZd8+HgkybP+Y5oYpMdEcovZN3iRqOWz1jdG0QCN0xwcn1GwN7ztYDiB7JnvR+W5dNpWt6dt6JXJQjvyWd8X86+37RluZILJVcgc+9Nm1yCYwKBgQC3HHwvIKuwi0qlEMaWbBgzNaHqsCJbEB640vJe0UI1dzNK6/HkBhe4aHwZureNyTZ/wz1Ya/tcbkdDBBYhh60xr3D1GC+7quoAoHCZAhs3OVySmS4LUz7vhNKrXHlkuJFWRIQpOmkZJyNRn8VEJAIMgSx1vXxiyxSmbjUiKQyi6wKBgQCQgmNY75EetxhXGbNCVDq4YryArd9S4gKn6TMZ6KCw5EhvHy1UjVkdKsz1jZTcaNq+mEGfxmOQue70DsrG5Ez7c4t+Hr69a5HMp3mJOEWEdCQIbtaFs9NlTGEhbpidb1v0hek9DaqwSrU8IgyFy5BfpNJRwkOHKL/QC+s5FGbdOwKBgD9FO2+5VTnSV3+DtWrCfPYs4P7Lz4MxpbvtP8wdeEgrIPERZ+qHZGjWyZLGXqhCT2+EEc1cumTswfjZD6CUVfbmDRzTN6Mb4nFG/sEP5kGFs4QAI9XL9OIkPfryIAv6blWlpRjt0uTbDiwlDa+G1aJme+tPBwzH6SG80OU10+TzAoGAGHfSW1P7sccUg43Sb2ldlEVS/0QbQ6U52wVkBZTSt9NDU5ZtW3fp2hnDc8GiUwnabVfTBOuJeXuPjCv313GlTmAaZdadbmhTMHtTpvI4fykhhsnWpwfldq5E+EjnLQZyCzUR8KyYa9A7ANybaOm6ZOk7LS//BudCbH6r7biggPw=
+  alipay_public_key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq8O5t19LClsSORIN18Z8kORP/8Rhim0+iXXqQXCvDhPS7b1CJaxZ9Nw9zQoCgmOPI22RI5sQqr3mRrbEyNzZtp11617xrIyEx1vaz2fcsg8SE9G5QiaN4kLdv/TdT4t/CrPQxuhfRF0Ezw7eCCZC19I7FstDCsM+6y9MWrwEpSbn1md7b79/myUz8c0g9VWJLYZuTLsyy+mP8DuLp5SOic0kSY9AfPlg7zbwXSg0whTd0qgsoo0S9cmHSZFcjxgSzOGwLgr1UKIzP73YRQpYd3o1b6w94gF9PaHvksMgFxNMENCFZMe/aVAFt45olOlzVkv4VQ/YMTtvQtwxWSc0VwIDAQAB
+  notify_url: http://makiatox-studio.natapp1.cc/api/v1/alipay/alipay_notify_url
+  return_url: https://gaga.plus
+  gatewayUrl: https://openapi-sandbox.dl.alipaydev.com/gateway.do
 
 # 日志
 logging:
