@@ -5,14 +5,13 @@ import com.payplus.domain.order.adapter.port.IProductPort;
 import com.payplus.domain.order.adapter.repository.IOrderRepository;
 import com.payplus.domain.order.model.aggregate.CreateOrderAggregate;
 import com.payplus.domain.order.model.entity.PayOrderEntity;
-import com.payplus.domain.payment.adapter.port.IPaymentPort;
 import com.payplus.domain.payment.model.valobj.PrepayCommand;
-import com.payplus.domain.payment.service.IPaymentService;
 import com.payplus.domain.payment.service.PaymentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -51,5 +50,25 @@ public class OrderService extends AbstractOrderService {
         // 更新订单中的支付信息
         repository.updateOrderPayInfo(payOrderEntity);
         return payOrderEntity;
+    }
+
+    @Override
+    public void changeOrderPaySuccess(String orderId) {
+        repository.changeOrderPaySuccess(orderId);
+    }
+
+    @Override
+    public List<String> queryNoPayNotifyOrder() {
+        return repository.queryNoPayNotifyOrder();
+    }
+
+    @Override
+    public List<String> queryTimeoutCloseOrderList() {
+        return repository.queryTimeoutCloseOrderList();
+    }
+
+    @Override
+    public boolean changeOrderClose(String orderId) {
+        return repository.changeOrderPaySuccess(orderId);
     }
 }

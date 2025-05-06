@@ -107,8 +107,8 @@ public class AlipayController implements IPayService {
         log.info("支付回调，买家付款金额: {}", params.get("buyer_pay_amount"));
         log.info("支付回调，支付回调，更新订单 {}", tradeNo);
 
-//        // 可以增加 code 10000 与 tradeStatus TRADE_SUCCESS 判断
-//        orderService.changeOrderPaySuccess(tradeNo);
+        // 可以增加 code 10000 与 tradeStatus TRADE_SUCCESS 判断
+        orderService.changeOrderPaySuccess(tradeNo);
 
         return "success";
     }

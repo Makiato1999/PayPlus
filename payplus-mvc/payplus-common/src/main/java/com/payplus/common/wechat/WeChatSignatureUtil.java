@@ -6,8 +6,6 @@ import java.util.Arrays;
 import java.util.Formatter;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.stream;
-
 public class WeChatSignatureUtil {
     public static boolean verify(String token, String signature, String timestamp, String nonce) {
         // 1）将token、timestamp、nonce三个参数进行字典序排序

@@ -32,13 +32,13 @@ public abstract class AbstractOrderService implements IOrderService {
         // 查询当前用户是否存在未支付订单或者掉单订单
         OrderEntity unpaidOrderEntity = repository.queryUnpaidOrder(shopCartEntity);
 
-        if (unpaidOrderEntity != null && OrderStatusVO.PAY_WAIT.getCode().equals(unpaidOrderEntity.getOrderStatusVO())) {
+        if (unpaidOrderEntity != null && OrderStatusVO.PAY_WAIT.getCode().equals(unpaidOrderEntity.getOrderStatusVO().getCode())) {
             log.info("创建订单-存在，已存在未支付订单。userId:{} productId:{} orderId:{}", shopCartEntity.getUserId(), shopCartEntity.getProductId(), unpaidOrderEntity.getOrderId());
             return PayOrderEntity.builder()
                     .orderId(unpaidOrderEntity.getOrderId())
                     .payUrl(unpaidOrderEntity.getPayUrl())
                     .build();
-        } else if (unpaidOrderEntity != null && OrderStatusVO.CREATE.getCode().equals(unpaidOrderEntity.getOrderStatusVO())) {
+        } else if (unpaidOrderEntity != null && OrderStatusVO.CREATE.getCode().equals(unpaidOrderEntity.getOrderStatusVO().getCode())) {
             log.info("创建订单-存在，存在未创建支付单订单，创建支付单开始 userId:{} productId:{} orderId:{}", shopCartEntity.getUserId(), shopCartEntity.getProductId(), unpaidOrderEntity.getOrderId());
             PayOrderEntity payOrderEntity = doPrepayOrder(unpaidOrderEntity.getProductId(), unpaidOrderEntity.getProductName(), unpaidOrderEntity.getOrderId(), unpaidOrderEntity.getTotalAmount());
             return PayOrderEntity.builder()
