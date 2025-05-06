@@ -8,3 +8,9 @@ PayPlus: Payment Platform with MVC &amp; DDD Architecture
 - Order Service Design: Developed a comprehensive order service system, enforcing strict validation on order data and ensuring reliable creation and persistent storage of orders. This design guarantees transaction integrity and consistency, supporting high availability of the system.
 
 - Alipay Payment Integration: Seamlessly connected with the Alipay sandbox environment, completing the SDK configuration for payment. By establishing links from order creation to payment status callback notifications, the system ensures accurate and timely feedback on payment outcomes, resulting in a smooth and efficient transaction process.
+
+
+domain: authentication, order, payment
+RPC -> product (id, name, desc, price)
+WeChat -> login (token, qr code)
+Alipay -> prepay (notify, message)
