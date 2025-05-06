@@ -35,6 +35,10 @@
             <artifactId>adapter-rxjava2</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.alipay.sdk</groupId>
+            <artifactId>alipay-sdk-java</artifactId>
+        </dependency>
         <!-- 系统模块 -->
         <dependency>
             <groupId>com.payplus</groupId>
