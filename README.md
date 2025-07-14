@@ -1,10 +1,142 @@
 # PayPlus
-PayPlus: Payment Platform with MVC &amp; DDD Architecture
 
-- Internal Network Tunneling & Real-Time Functional Testing: Utilized NATAPP for internal network tunneling, allowing secure external access to locally hosted payment interfaces. This enabled end-to-end functional testing under real-world conditions to ensure the system’s readiness for production deployment.
+PayPlus：支持MVC与DDD架构的多支付平台
 
-- WeChat Pay & Enhanced Security: Integrated WeChat QR code payment with user IP-based location monitoring to trigger secure template messages. This approach not only improves user account protection but also effectively reduces potential risks.
+## 项目简介
 
-- Order Service Design: Developed a comprehensive order service system, enforcing strict validation on order data and ensuring reliable creation and persistent storage of orders. This design guarantees transaction integrity and consistency, supporting high availability of the system.
+PayPlus 是一个支持多种支付方式（如微信、支付宝）的支付平台，分别采用了 DDD（领域驱动设计）和 MVC（模型-视图-控制器）两种主流架构模式。项目通过分层设计、职责清晰，提升了系统的可维护性、可扩展性和业务适应能力。
 
-- Alipay Payment Integration: Seamlessly connected with the Alipay sandbox environment, completing the SDK configuration for payment. By establishing links from order creation to payment status callback notifications, the system ensures accurate and timely feedback on payment outcomes, resulting in a smooth and efficient transaction process.
+---
+
+## 主要亮点
+
+- **内网穿透与实时功能测试**：利用 NATAPP 实现内网穿透，使本地支付接口可安全暴露到外网，支持端到端功能测试，保障系统上线前的真实环境验证。
+- **微信支付与安全增强**：集成微信二维码支付，结合用户 IP 位置监控，触发安全模板消息，有效提升用户账户安全性并降低风险。
+- **订单服务设计**：构建了完善的订单服务体系，严格校验订单数据，确保订单创建与持久化的可靠性，保障交易一致性与系统高可用。
+- **支付宝支付集成**：无缝对接支付宝沙箱环境，完成 SDK 配置，实现从订单创建到支付回调的全链路闭环，确保支付结果的准确与高效反馈。
+
+---
+
+## 目录结构说明
+
+```
+PayPlus/
+├── payplus-ddd/      # 基于DDD架构的实现
+│   ├── payplus-ddd-api/           # API接口层
+│   ├── payplus-ddd-app/           # 应用服务层
+│   ├── payplus-ddd-domain/        # 领域层
+│   ├── payplus-ddd-infrastructure/# 基础设施层
+│   ├── payplus-ddd-trigger/       # 触发器/适配器层
+│   ├── payplus-ddd-types/         # 通用类型、枚举、异常等
+│   └── ...
+├── payplus-mvc/      # 基于MVC架构的实现
+│   ├── payplus-common/            # 公共模块
+│   ├── payplus-dao/               # 数据访问层
+│   ├── payplus-domain/            # 领域模型
+│   ├── payplus-service/           # 业务服务层
+│   ├── payplus-web/               # Web控制器层
+│   └── ...
+└── README.md
+```
+
+---
+
+## 一、DDD 架构设计
+
+### 1. 架构分层
+
+- **API 层（payplus-ddd-api）**  
+  对外暴露接口（如 RESTful API），定义 DTO、请求/响应对象，屏蔽内部实现细节。
+- **应用层（payplus-ddd-app）**  
+  负责业务用例编排，调用领域服务，处理事务，协调各领域对象完成业务流程。
+- **领域层（payplus-ddd-domain）**  
+  业务核心，包含领域模型（实体、值对象、聚合根）、领域服务、仓储接口等。领域对象只关注业务规则，不依赖基础设施。
+- **基础设施层（payplus-ddd-infrastructure）**  
+  提供技术实现，如数据库访问、第三方服务集成、消息中间件等，具体实现领域层定义的接口。
+- **触发器/适配器层（payplus-ddd-trigger）**  
+  负责接收外部请求（如 HTTP、定时任务、消息监听），将其转化为应用层可处理的命令。
+- **通用类型（payplus-ddd-types）**  
+  定义全局通用的类型、枚举、异常、事件等。
+
+### 2. 业务流程示例
+
+1. 外部请求通过 Trigger 层（如 Controller）进入系统。
+2. 应用层接收请求，进行用例编排，调用领域服务。
+3. 领域服务处理业务逻辑，操作领域模型。
+4. 需要持久化时，通过仓储接口由基础设施层实现数据存取。
+5. 结果通过 API 层返回。
+
+### 3. 适用场景
+
+- 复杂业务逻辑、规则多变的系统
+- 需要高度可维护性、可扩展性的企业级应用
+
+---
+
+## 二、MVC 架构设计
+
+### 1. 架构分层
+
+- **Controller（payplus-web/controller）**  
+  负责接收用户请求，调用 Service 层处理业务，返回视图或数据。
+- **Service（payplus-service）**  
+  业务逻辑处理层，协调 DAO 和 Domain，完成具体业务操作。
+- **Domain（payplus-domain）**  
+  领域模型，定义核心业务对象和属性。
+- **DAO（payplus-dao）**  
+  数据访问层，负责与数据库的交互。
+- **Common（payplus-common）**  
+  公共工具类、常量、异常、通用响应等。
+
+### 2. 业务流程示例
+
+1. 用户请求到达 Controller。
+2. Controller 调用 Service 处理业务。
+3. Service 需要数据时调用 DAO。
+4. DAO 负责数据的增删改查。
+5. 结果返回 Controller，再返回给前端。
+
+### 3. 适用场景
+
+- 业务逻辑相对简单，开发效率优先
+- 适合中小型项目或原型开发
+
+---
+
+## 三、两种架构对比
+
+| 维度       | DDD 架构                | MVC 架构              |
+| ---------- | ----------------------- | --------------------- |
+| 复杂度     | 高，适合复杂业务        | 低，适合简单业务      |
+| 可维护性   | 强，业务与技术解耦      | 一般，易出现代码耦合  |
+| 扩展性     | 强，便于业务演进        | 一般，扩展需谨慎      |
+| 学习成本   | 高，需要理解领域建模    | 低，开发者普遍熟悉    |
+| 适用场景   | 企业级、核心业务系统    | 中小型项目、快速开发  |
+
+---
+
+## 四、核心模块说明（以 DDD 为例）
+
+- **订单服务（OrderService）**  
+  负责订单的创建、校验、持久化，保证交易一致性。
+- **支付集成（Alipay/WeChat）**  
+  对接第三方支付 SDK，处理支付请求、回调、状态同步。
+- **安全机制**  
+  通过用户 IP 监控、消息模板推送等手段提升安全性。
+- **日志与监控**  
+  统一日志采集，便于问题追踪与系统监控。
+
+---
+
+## 五、部署与测试
+
+- 支持 NATAPP 内网穿透，便于本地联调与外部测试。
+- 提供 Docker Compose 脚本，支持一键部署。
+- 支持多环境配置（dev/test/prod）。
+
+---
+
+## 六、参考资料
+
+- [领域驱动设计（DDD）](https://martinfowler.com/bliki/DomainDrivenDesign.html)
+- [MVC 架构模式](https://en.wikipedia.org/wiki/Model–view–controller)
