@@ -1,142 +1,258 @@
 # PayPlus
 
-PayPlus：支持MVC与DDD架构的多支付平台
+PayPlus is a virtual-product order and payment system implemented twice in the same repository:
 
-## 项目简介
+- `payplus-mvc`: a classic layered MVC version
+- `payplus-ddd`: a DDD-style refactor of the same business flow
 
-PayPlus 是一个支持多种支付方式（如微信、支付宝）的支付平台，分别采用了 DDD（领域驱动设计）和 MVC（模型-视图-控制器）两种主流架构模式。项目通过分层设计、职责清晰，提升了系统的可维护性、可扩展性和业务适应能力。
+The project focuses on the full payment lifecycle rather than a single SDK integration: order creation, Alipay checkout, async callback verification, order state transition, timeout closing, missing-callback compensation, and WeChat QR-code login.
 
----
+## Why This Repository Exists
 
-## 主要亮点
+This repository is useful for comparing how the same payment business can be modeled in two styles:
 
-- **内网穿透与实时功能测试**：利用 NATAPP 实现内网穿透，使本地支付接口可安全暴露到外网，支持端到端功能测试，保障系统上线前的真实环境验证。
-- **微信支付与安全增强**：集成微信二维码支付，结合用户 IP 位置监控，触发安全模板消息，有效提升用户账户安全性并降低风险。
-- **订单服务设计**：构建了完善的订单服务体系，严格校验订单数据，确保订单创建与持久化的可靠性，保障交易一致性与系统高可用。
-- **支付宝支付集成**：无缝对接支付宝沙箱环境，完成 SDK 配置，实现从订单创建到支付回调的全链路闭环，确保支付结果的准确与高效反馈。
+- MVC for straightforward feature delivery
+- DDD for better separation of business rules, infrastructure, and extension points
 
----
+The DDD version is the stronger reference if you want to understand how the payment flow was decomposed into domain services, repositories, strategy selection, and adapter ports.
 
-## 目录结构说明
+## Business Scope
 
-```
+The current codebase covers these scenarios:
+
+- Create an order for a virtual product
+- Generate an Alipay page-payment request
+- Accept Alipay async callbacks and verify the signature
+- Update order status to paid after successful callback
+- Scan unpaid orders on a schedule
+- Close orders that stay unpaid for too long
+- Compensate for missing or failed payment callbacks by actively querying Alipay
+- Support WeChat QR-code login and cache login state locally
+
+## Tech Stack
+
+- Java 8
+- Spring Boot 2.7.x
+- MyBatis
+- MySQL
+- Alipay Java SDK
+- Retrofit2
+- Guava Cache
+- Guava EventBus
+- Docker Compose
+
+Notes:
+
+- The current implementation uses `Guava Cache` for local caching.
+- Redis appears in deployment files, but Redis is not the active cache implementation in the business code.
+
+## Repository Layout
+
+```text
 PayPlus/
-├── payplus-ddd/      # 基于DDD架构的实现
-│   ├── payplus-ddd-api/           # API接口层
-│   ├── payplus-ddd-app/           # 应用服务层
-│   ├── payplus-ddd-domain/        # 领域层
-│   ├── payplus-ddd-infrastructure/# 基础设施层
-│   ├── payplus-ddd-trigger/       # 触发器/适配器层
-│   ├── payplus-ddd-types/         # 通用类型、枚举、异常等
-│   └── ...
-├── payplus-mvc/      # 基于MVC架构的实现
-│   ├── payplus-common/            # 公共模块
-│   ├── payplus-dao/               # 数据访问层
-│   ├── payplus-domain/            # 领域模型
-│   ├── payplus-service/           # 业务服务层
-│   ├── payplus-web/               # Web控制器层
-│   └── ...
+├── payplus-ddd/
+│   ├── payplus-ddd-api/             # API contracts and DTOs
+│   ├── payplus-ddd-app/             # Spring Boot app, configs, MyBatis resources
+│   ├── payplus-ddd-domain/          # Core domain model and domain services
+│   ├── payplus-ddd-infrastructure/  # Repository impls, external gateways, payment ports
+│   ├── payplus-ddd-trigger/         # Controllers, jobs, listeners
+│   └── payplus-ddd-types/           # Shared constants, exceptions, events, SDK helpers
+├── payplus-mvc/
+│   ├── payplus-common/              # Shared constants, exceptions, utilities
+│   ├── payplus-dao/                 # DAO interfaces
+│   ├── payplus-domain/              # Request/response/domain objects
+│   ├── payplus-service/             # Service layer
+│   └── payplus-web/                 # Controllers, jobs, app bootstrap, resources
 └── README.md
 ```
 
----
+## Core Flow
 
-## 一、DDD 架构设计
+### 1. Order creation
 
-### 1. 架构分层
+The system receives `userId` and `productId`, checks whether the user already has an unpaid order for the same product, and reuses that order if possible.
 
-- **API 层（payplus-ddd-api）**  
-  对外暴露接口（如 RESTful API），定义 DTO、请求/响应对象，屏蔽内部实现细节。
-- **应用层（payplus-ddd-app）**  
-  负责业务用例编排，调用领域服务，处理事务，协调各领域对象完成业务流程。
-- **领域层（payplus-ddd-domain）**  
-  业务核心，包含领域模型（实体、值对象、聚合根）、领域服务、仓储接口等。领域对象只关注业务规则，不依赖基础设施。
-- **基础设施层（payplus-ddd-infrastructure）**  
-  提供技术实现，如数据库访问、第三方服务集成、消息中间件等，具体实现领域层定义的接口。
-- **触发器/适配器层（payplus-ddd-trigger）**  
-  负责接收外部请求（如 HTTP、定时任务、消息监听），将其转化为应用层可处理的命令。
-- **通用类型（payplus-ddd-types）**  
-  定义全局通用的类型、枚举、异常、事件等。
+If no reusable order exists:
 
-### 2. 业务流程示例
+- query product info
+- create a local order record in MySQL
+- call Alipay to generate a payment page
+- persist `payUrl` and move the order into waiting-for-payment status
 
-1. 外部请求通过 Trigger 层（如 Controller）进入系统。
-2. 应用层接收请求，进行用例编排，调用领域服务。
-3. 领域服务处理业务逻辑，操作领域模型。
-4. 需要持久化时，通过仓储接口由基础设施层实现数据存取。
-5. 结果通过 API 层返回。
+### 2. Payment callback
 
-### 3. 适用场景
+After the user pays through Alipay:
 
-- 复杂业务逻辑、规则多变的系统
-- 需要高度可维护性、可扩展性的企业级应用
+- Alipay calls the async notify endpoint
+- the server checks `trade_status`
+- the callback signature is verified with Alipay's public key
+- the local order is updated to paid
 
----
+This is the key "order -> payment -> callback -> state update" business loop.
 
-## 二、MVC 架构设计
+### 3. Compensation and timeout handling
 
-### 1. 架构分层
+The system does not rely on async callbacks alone.
 
-- **Controller（payplus-web/controller）**  
-  负责接收用户请求，调用 Service 层处理业务，返回视图或数据。
-- **Service（payplus-service）**  
-  业务逻辑处理层，协调 DAO 和 Domain，完成具体业务操作。
-- **Domain（payplus-domain）**  
-  领域模型，定义核心业务对象和属性。
-- **DAO（payplus-dao）**  
-  数据访问层，负责与数据库的交互。
-- **Common（payplus-common）**  
-  公共工具类、常量、异常、通用响应等。
+- `NoPayNotifyOrderJob` scans orders that remain unpaid and actively queries Alipay
+- `TimeoutCloseOrderJob` closes orders that have stayed unpaid for too long
 
-### 2. 业务流程示例
+This design reduces the risk of local order status drifting from the real payment result.
 
-1. 用户请求到达 Controller。
-2. Controller 调用 Service 处理业务。
-3. Service 需要数据时调用 DAO。
-4. DAO 负责数据的增删改查。
-5. 结果返回 Controller，再返回给前端。
+### 4. WeChat login
 
-### 3. 适用场景
+The WeChat login flow works like this:
 
-- 业务逻辑相对简单，开发效率优先
-- 适合中小型项目或原型开发
+- request a QR-code ticket from WeChat
+- let the client display the QR code
+- receive the scan event from the WeChat portal callback
+- map `ticket -> openId` in local cache
+- poll login status from the frontend
 
----
+`access_token` and login state are cached with Guava.
 
-## 三、两种架构对比
+## Architecture Comparison
 
-| 维度       | DDD 架构                | MVC 架构              |
-| ---------- | ----------------------- | --------------------- |
-| 复杂度     | 高，适合复杂业务        | 低，适合简单业务      |
-| 可维护性   | 强，业务与技术解耦      | 一般，易出现代码耦合  |
-| 扩展性     | 强，便于业务演进        | 一般，扩展需谨慎      |
-| 学习成本   | 高，需要理解领域建模    | 低，开发者普遍熟悉    |
-| 适用场景   | 企业级、核心业务系统    | 中小型项目、快速开发  |
+### MVC Version
 
----
+The MVC implementation keeps most business flow in the service layer:
 
-## 四、核心模块说明（以 DDD 为例）
+- controllers accept requests
+- services orchestrate order creation and payment logic
+- DAOs read and write MySQL
 
-- **订单服务（OrderService）**  
-  负责订单的创建、校验、持久化，保证交易一致性。
-- **支付集成（Alipay/WeChat）**  
-  对接第三方支付 SDK，处理支付请求、回调、状态同步。
-- **安全机制**  
-  通过用户 IP 监控、消息模板推送等手段提升安全性。
-- **日志与监控**  
-  统一日志采集，便于问题追踪与系统监控。
+This version is easier to read at first glance and is suitable for fast iteration, but payment-specific rules and integration logic tend to accumulate inside service classes.
 
----
+### DDD Version
 
-## 五、部署与测试
+The DDD implementation separates responsibilities more explicitly:
 
-- 支持 NATAPP 内网穿透，便于本地联调与外部测试。
-- 提供 Docker Compose 脚本，支持一键部署。
-- 支持多环境配置（dev/test/prod）。
+- `trigger`: HTTP entrypoints, jobs, listeners
+- `domain`: business rules, order service, payment service, aggregates, value objects
+- `infrastructure`: DAO implementations, third-party gateways, port adapters
+- `api/types/app`: contracts, configs, shared objects
 
----
+Important examples in the DDD version:
 
-## 六、参考资料
+- `OrderService`: domain orchestration for order creation
+- `PaymentService`: delegates prepay behavior to payment ports
+- `PaymentStrategyFactory`: resolves the payment implementation by pay method
+- `OrderRepository`: persistence and event publication
+- `AlipayPort`: Alipay-specific prepay integration
+- `LoginPort`: WeChat-specific gateway integration
 
-- [领域驱动设计（DDD）](https://martinfowler.com/bliki/DomainDrivenDesign.html)
-- [MVC 架构模式](https://en.wikipedia.org/wiki/Model–view–controller)
+This structure makes it easier to extend payment methods without rewriting core order logic.
+
+## Key Files to Read First
+
+If you want a fast code walkthrough, start here:
+
+- `payplus-ddd/payplus-ddd-trigger/src/main/java/com/payplus/trigger/http/AlipayController.java`
+- `payplus-ddd/payplus-ddd-domain/src/main/java/com/payplus/domain/order/service/AbstractOrderService.java`
+- `payplus-ddd/payplus-ddd-domain/src/main/java/com/payplus/domain/order/service/OrderService.java`
+- `payplus-ddd/payplus-ddd-domain/src/main/java/com/payplus/domain/payment/service/PaymentService.java`
+- `payplus-ddd/payplus-ddd-domain/src/main/java/com/payplus/domain/payment/service/strategy/PaymentStrategyFactory.java`
+- `payplus-ddd/payplus-ddd-infrastructure/src/main/java/com/payplus/infrastructure/adapter/repository/OrderRepository.java`
+- `payplus-ddd/payplus-ddd-trigger/src/main/java/com/payplus/trigger/job/NoPayNotifyOrderJob.java`
+- `payplus-ddd/payplus-ddd-trigger/src/main/java/com/payplus/trigger/job/TimeoutCloseOrderJob.java`
+- `payplus-ddd/payplus-ddd-trigger/src/main/java/com/payplus/trigger/http/LoginController.java`
+- `payplus-ddd/payplus-ddd-trigger/src/main/java/com/payplus/trigger/http/WeChatPortalController.java`
+
+## Database
+
+Both implementations use a single core table: `pay_order`.
+
+Schema files:
+
+- DDD: `payplus-ddd/docs/dev-ops/mysql/sql/payplus-mall.sql`
+- MVC: `payplus-mvc/docs/dev-ops/mysql/sql/s-pay-mall.sql`
+
+Important fields:
+
+- `order_id`
+- `user_id`
+- `product_id`
+- `status`
+- `pay_url`
+- `pay_time`
+
+Typical status values used by the code:
+
+- `CREATE`
+- `PAY_WAIT`
+- `PAY_SUCCESS`
+- `CLOSE`
+
+## Local Run
+
+The project contains environment-specific YAML files and Docker resources, but before running locally you should review and replace all environment-dependent values.
+
+### Prerequisites
+
+- JDK 8
+- Maven
+- MySQL 8.x
+
+### Basic steps
+
+1. Create the database from the SQL file that matches the implementation you want to run.
+2. Update the datasource in the corresponding `application-*.yml`.
+3. Replace demo or local-only payment and WeChat configuration values.
+4. Start either the MVC app or the DDD app.
+
+Typical app entrypoints:
+
+- MVC: `payplus-mvc/payplus-web/src/main/java/com/payplus/Application.java`
+- DDD: `payplus-ddd/payplus-ddd-app/src/main/java/com/payplus/Application.java`
+
+### Maven modules
+
+- MVC root: `payplus-mvc/pom.xml`
+- DDD root: `payplus-ddd/pom.xml`
+
+## API Endpoints
+
+Main HTTP endpoints in the DDD version:
+
+- `POST /api/v1/alipay/create_pay_order`
+- `POST /api/v1/alipay/alipay_notify_url`
+- `GET /api/v1/login/wechat_qrcode_ticket`
+- `GET /api/v1/login/check_login`
+- `GET /api/v1/wechat/portal/receive`
+- `POST /api/v1/wechat/portal/receive`
+
+The MVC version exposes the same business endpoints with the same overall flow.
+
+## Testing
+
+The repository contains basic Spring Boot tests and a small Alipay sandbox test class.
+
+Examples:
+
+- `payplus-ddd/payplus-ddd-app/src/test/java/com/payplus/test/domain/OrderServiceTest.java`
+- `payplus-mvc/payplus-web/src/test/java/com/payplus/test/web/AliPayTest.java`
+
+The tests are more like development verification samples than a full automated regression suite.
+
+## Interview / Learning Angles
+
+This repository is a good example for discussing:
+
+- how to build a payment order lifecycle
+- why async callbacks need signature verification
+- why callback-only status update is not enough
+- how to design compensation jobs for eventual consistency
+- how to compare MVC and DDD in a concrete business system
+- how to decouple payment channels with a strategy factory and port abstraction
+
+For interview preparation in Chinese, see `NOTE.md`.
+
+## Caveats
+
+- Configuration files contain environment-specific values and demo credentials; treat them as local examples and replace them before real use.
+- Redis is not actively wired into the business flow even though related deployment files exist.
+- Product data is currently mocked through a local RPC-style adapter rather than a real external product service.
+
+## License
+
+Apache License 2.0. See `LICENSE`.
